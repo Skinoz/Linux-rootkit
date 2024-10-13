@@ -25,7 +25,7 @@
 
 /* struct for our kthread */
 struct kthread_t {
-	struct task_struct *thread;s
+	struct task_struct *thread;
 	struct socket *sock;
 	struct sockaddr_in addr;
 	struct socket *sock_send;

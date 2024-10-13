@@ -1,7 +1,9 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/printk.h>
-#include "include/udp_server.h"
+#include "headers/udp_server.h"
+#include "../commands/headers/commands.h"
+#include "../include/utils.h"
 
 /*DEBUG DEFINE*/
 #define MODULE_NAME "ksocket"
@@ -11,7 +13,7 @@ struct kthread_t *kthread = NULL;
 static void ksocket_start(void)
 {
     int size, err;
-    int bufsize = BUFFER_SIZE;  // Increased buffer size to 100 bytes
+    int bufsize = BUFFER_SIZE;
     unsigned char buf[BUFFER_SIZE + 1];
 
     kthread->running = 1;
@@ -53,14 +55,36 @@ static void ksocket_start(void)
         if (size < 0) {
             printk(KERN_INFO MODULE_NAME ": error getting datagram, sock_recvmsg error = %d\n", size);
         } else {
-            if (size >= BUFFER_SIZE)
-            {
+            if (size >= BUFFER_SIZE) {
                 printk(KERN_INFO MODULE_NAME ": received %d bytes, but buffer is too small\n", size);
                 continue;
             }
-            
-            printk(KERN_INFO MODULE_NAME ": received %d bytes\n", size);
-            printk(KERN_INFO MODULE_NAME ": received data: %s\n", buf);
+
+            // Parse the command and its arguments
+            parsed_command_t parsed_cmd = parse_command(buf);
+
+            // Check the received command against the registered commands
+            command_t *cmd = commands;
+            int command_found = 0;
+
+            while (cmd->name != NULL) {
+                if (strcmp(parsed_cmd.command, cmd->name) == 0) {
+                    // Execute the corresponding command with optional arguments
+                    cmd->func(parsed_cmd.arg1, parsed_cmd.arg2);  // Pass parsed arguments
+                    command_found = 1;
+                    break;
+                }
+                cmd++;
+            }
+
+            if (!command_found) {
+                printk(KERN_WARNING "Unknown command: %s\n", parsed_cmd.command);
+            }
+
+            // Free parsed components
+            if (parsed_cmd.command) kfree(parsed_cmd.command);
+            if (parsed_cmd.arg1) kfree(parsed_cmd.arg1);
+            if (parsed_cmd.arg2) kfree(parsed_cmd.arg2);
 
             // Sending response "OK"
             memset(&buf, 0, bufsize + 1);  // Clear the buffer
