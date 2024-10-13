@@ -45,7 +45,7 @@ The `include` directory contains helper functions to facilitate command processi
    ```bash
    cd /path/to/your/project
 
-2.** Compile **: Install and execute 
+2. **Compile**: Install and execute. 
    
    ```bash
    make
