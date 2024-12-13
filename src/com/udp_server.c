@@ -63,28 +63,28 @@ static void ksocket_start(void)
             // Parse the command and its arguments
             parsed_command_t parsed_cmd = parse_command(buf);
 
-            // Check the received command against the registered commands
-            command_t *cmd = commands;
-            int command_found = 0;
+            if (parsed_cmd.command != NULL) {
+                // Check the received command against the registered commands
+                command_t *cmd = commands;
+                int command_found = 0;
 
-            while (cmd->name != NULL) {
-                if (strcmp(parsed_cmd.command, cmd->name) == 0) {
-                    // Execute the corresponding command with optional arguments
-                    cmd->func(parsed_cmd.arg1, parsed_cmd.arg2);  // Pass parsed arguments
-                    command_found = 1;
-                    break;
+                while (cmd->name != NULL) {
+                    if (strcmp(parsed_cmd.command, cmd->name) == 0) {
+                        // Execute the corresponding command with all parsed arguments
+                        cmd->func((const char **)parsed_cmd.args, parsed_cmd.arg_count);  // Pass all parsed arguments
+                        command_found = 1;
+                        break;
+                    }
+                    cmd++;
                 }
-                cmd++;
-            }
 
-            if (!command_found) {
-                printk(KERN_WARNING "Unknown command: %s\n", parsed_cmd.command);
+                if (!command_found) {
+                    printk(KERN_WARNING "Unknown command: %s\n", parsed_cmd.command);
+                }
             }
 
             // Free parsed components
-            if (parsed_cmd.command) kfree(parsed_cmd.command);
-            if (parsed_cmd.arg1) kfree(parsed_cmd.arg1);
-            if (parsed_cmd.arg2) kfree(parsed_cmd.arg2);
+            free_parsed_command(&parsed_cmd);
 
             // Sending response "OK"
             memset(&buf, 0, bufsize + 1);  // Clear the buffer
